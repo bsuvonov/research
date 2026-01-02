@@ -1,0 +1,6 @@
+/* Hide the sidebar avatar container so no placeholder circle renders. */
+#sidebar #avatar,
+#sidebar .avatar,
+#sidebar img[alt="avatar"] {
+  display: none !important;
+}
