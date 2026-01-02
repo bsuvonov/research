@@ -17,7 +17,7 @@ Jekyll::Hooks.register :posts, :post_init do |post|
 
       # Keep the original post date but use last push time to break ties.
       post_date = post.date
-      post.date = Time.new(
+      post.data["date"] = Time.new(
         post_date.year,
         post_date.month,
         post_date.day,
