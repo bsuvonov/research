@@ -15,17 +15,7 @@ Jekyll::Hooks.register :posts, :post_init do |post|
       lastmod_time = Time.parse(lastmod_date)
       post.data["last_modified_at"] = lastmod_time
 
-      # Keep the original post date but use last push time to break ties.
-      post_date = post.date
-      post.data["date"] = Time.new(
-        post_date.year,
-        post_date.month,
-        post_date.day,
-        lastmod_time.hour,
-        lastmod_time.min,
-        lastmod_time.sec,
-        lastmod_time.utc_offset
-      )
+      # Keep post.date stable; sorting ties is handled by posts-sorter.rb.
     end
   end
 
