@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Jan 14 Research Progress Report"
+title: Jan 14 Research Progress Report
 categories: []
 tags: [memory, paging, eBPF, zswap]
 ---
