@@ -1,3 +1,12 @@
+---
+layout: post
+title: "PageFlex: Flexible and Efficient User-space Delegation of Linux Paging Policies with eBPF"
+categories: []
+tags: [heuristics, code-gen, LLM, eBPF]
+---
+
+
+
 ![](assets/img/policysmith/cap.png)
 
 <h4 align="center">HotNets, November 2025</h4>
