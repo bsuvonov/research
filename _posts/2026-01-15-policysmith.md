@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "PageFlex: Flexible and Efficient User-space Delegation of Linux Paging Policies with eBPF"
+title: "Man-Made Heuristics Are Dead. Long Live Code Generators!"
 categories: []
 tags: [heuristics, code-gen, LLM, eBPF]
 ---
