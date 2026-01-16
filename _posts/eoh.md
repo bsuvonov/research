@@ -1,0 +1,171 @@
+---
+layout: post
+title: "Evolution of Heuristics: Towards Efficient Automatic Algorithm Design Using Large Language Model"
+categories: []
+tags: [heuristics, LLM, framework]
+---
+
+
+
+
+![cap](assets/img/eoh/cap.png)
+
+
+
+![cap2](assets/img/eoh/cap2.png)
+
+
+
+### 1. Introduction
+
+Manually designing, modifying, and configuring a heuristic for a given problem can be very labor-intensive and demands rich expert experience. To address this issue, Automatic Heuristic Design (AHD) has become an active research area. LLM could be used, but standalone LLM with prompt engineering can be insufficient for producing novel and useful ideas beyond existing knowledge. Some attempts have been made to couple LLMs with Evolutionary Computation (EC) methods to produce heuristics in an automatic manner, they are very good, but their mechanism is not very efficient and it needs a very large amount of computational resources to generate a quality heuristic.
+
+The paper uses "EC" in the standard sense: keep a *population* of candidates → *evaluate* them (fitness) → *generate variations* → *select* the better ones → repeat.
+
+A new evolutionary paradigm, dubbed *Evolution of Heuristics (EoH)*, is introduced, and it takes advantage of both LLMs and EC for AHD. It is an evolutionary framework to simultaneously evolve the thoughts and codes of heuristics in a cooperative manner.
+
+*thought* – a high-level idea of heuristic
+
+*code* – an executable implementation of heuristic
+
+**Contributions**:
+
+- EoH, a paradigm that uses LLMs to evolution both thought and codes for automatic design of heuristics.
+- Several prompt strategies to guide LLM towards generating more diverse and effective heuristics.
+- Evaluation of EoH on three widely-studied combinatorial optimization benchmark problems, where EoH outperforms many existing AHD methods.
+
+### 2. Background and Related Works.
+
+#### Automatic Heuristic Design
+
+Various effective methods can tune heuristics or combine different algorithmic components automatically. Machine learning techniques, genetic programming have been used, but they require hand-crafted algorithmic components and domain knowledge (they suck).
+
+#### LLMs for Heuristic Design
+
+LLMs have been used, but they are bad at complex problems with large search space, and designing a competitive heuristic is a challenge with just prompt engineering.
+
+#### LLMs + EC
+
+Findings so far (FunSearch as representative) are computationally expensive and usually need to generate millions of programs (i.e., queries to LLMs).
+
+### 3. Evolution of Heuristics (EoH)
+
+#### 3.1 Main Idea
+
+EoH aims at evolving both thoughts and codes to mimic the heuristic development conducted by human experts. To achieve this goal, EoH
+
+- maintains both a natural language description and its corresponding code implementation for each heuristic. n each trial, it allows LLMs to first generate a heuristic in terms of natural language and then generate its corresponding code.
+
+- employs several prompt strategies to guide LLMs to do reasoning over existing thoughts and codes. These strategies are designed to learn from previous experiences and effectively explore the heuristic space.
+- evolves a population of candidate heuristics. It uses LLMs to produce new heuristics. Selection is also used to direct the search. The quality of each heuristic is evaluated on a set of problem instances.
+
+FunSearch performs evolution of codes only and does not use prompt strategies explicitly.
+
+#### 3.2 Evolution Framework
+
+EoH maintains a population of  $N$ heuristics, denoted as $P = {h_1, ..., h_N}$, at each generation. Each heuristic $h_i$ is evaluated on a set of problem instances and assigned a fitness value $f(h_i)$.
+
+Five prompt strategies are designed to generate new heuristics. At each generation, each strategy is called $N$ times to generate $N$ heuristics. Each newly generated heuristic will be evaluated on problem instances and added to the current population if it is feasible. **At most** $5N$ new heuristic will be added to the current population at each generation. Then, $N$ best individual solutions from the current population will be selected to form the population for the next generation.
+
+EoH are summarized as follows:
+
+**Step 0 Initialization:** Initialize the population $P$ of $N$ heuristics $h_1, ..., h_N$ by prompting  LLMs using **Initialization prompt**.
+
+**Step 1 Generation of Heuristics**: If the stopping condition is not met, five **Evolution prompt strategies** are used simultaneously to generate $5N$ new heuristics. For each of the five prompt strategies, repeat the following process $N$ times:
+
+- Step 1.1: Select parent heuristic(s) from the current population to construct a prompt for the strategy.
+- Step 1.2: Request LLM to generate a new heuristic as well as its corresponding code implementation.
+- Step 1.3: Evaluate the new heuristic on a set of evaluation instances to determine its fitness value.
+- Step 1.4: Add the new heuristic to the current population if the heuristic and code are feasible, if not, simply skip.
+
+**Step 2 Population Management**: Select the *N* best individual heuristics from the current population to form a population for the next generation. Go to **Step 1**.
+
+#### 3.3 Heuristic Representation
+
+Each heuristic consists of three parts: 1) its description in natural language, 2) a code block in a pre-defined format, and 3) a fitness value.
+
+The heuristic description comprises a few sentences in natural language. It is created by LLMs and presents a high-level thought.
+
+The code block is an implementation of the heuristic. It should follow a pre-defined format so that it can be identified and seamlessly integrated into EoH framework. In the experiments, they choose to implement it as a Python function. Three basic components should be explicitly given to format the code block: 1) Name of the function, 2) Input variables, and 3) Output variables.
+
+The evaluation of heuristics in EoH involves running the resulting algorithms on an instance set of the problem in question. This evaluation process differs from traditional evolutionary algorithms, which typically evaluate the objective function in a single instance.
+
+#### 3.4 Prompt Strategies
+
+**Initialization Prompt**. In their experiment, they use LLMs to create all the initial heuristics using initialization prompts. With initialization prompt, they inform the LLM with the heuristic design task and instruct it to design a new heuristic by first presenting the description and then implementing it as a Python code block. They repeat $N$ times to generate $N$ initial heuristics. Initialization prompt is to be written by user manually.
+
+**Evolution prompts**. Five prompt strategies are proposed for creating new heuristics. They are categorized to two groups: **E**xploration (**E1**, **E2**), and **M**odification (**M1**, **M2**, **M3**). The exploration strategies focus more on the exploration of the space of heuristics. The exploration strategies focus more on
+the exploration of the space of heuristics by conducting crossover-like operators on parent heuristics. The modification strategies refine a parent heuristic by modifying, adjusting parameters, and removing redundant parts.
+
+Any selection method can be used in EoH. In their experimental studies, heuristic in the current population is randomly selected with probability $p_i ∝ 1/(r_i + N )$, where $r_i$ is its rank and $N$ is the population size.
+
+
+
+#### 3.5 Sample Workflow (by ChatGPT 5.2 Extended Thinking)
+
+**Init:**
+
+- Population $P_0$ has 5 heuristics ($h_1$..$h_5$), each evaluated → fitness assigned.
+
+For each generation g = 1..5:
+- Offspring attempts: 5 strategies × N calls = 5×5 = 25 candidates.
+- Keep only feasible ones: $k_g $ feasible (0 ≤ $k_g $ ≤ 25).
+- Evaluate each feasible candidate → fitness.
+- Temporary pool size: 5 + $k_g$ (≤ 30).
+- Select best 5 by fitness → $P_g$.
+
+Population size at start of every generation: 5.
+
+Example $k_g $ values:
+- Gen1: $k_1$=22 → pool 27 → keep 5
+- Gen2: $k_2$=24 → pool 29 → keep 5
+- Gen3: $k_3$=20 → pool 25 → keep 5
+- Gen4: $k_4$=25 → pool 30 → keep 5
+- Gen5: $k_5$=23 → pool 28 → keep 5
+
+
+
+### 4. Experiments
+
+#### Experimental Settings and Implementation
+
+- *Online bin packing problem*. The objective is to allocate a collection of items of different sizes into the fewest possible bins with a fixed capacity $C$. They focus on the online scenario, where items are packed as they arrive, in contrast to the offline scenario where all items are known beforehand. The instances that are used for evaluation are five Weibull instances of size 5k with a capacity of 100. The fitness value is set as the average $lb/n$ on the five instances, where $lb$ represents the lower bound of the optimal number of bins computed and $n$ is the number of bins used to pack all the items by the evaluated heuristic. They adopt the settings in Romera-Paredes et al. (2024) to design heuristics to determine the suitable bin allocation for incoming items (Angelopoulos et al., 2023). Specifically, the task for EoH is to design the scoring function for assigning items. The inputs are the size of the item and the rest capacities of bins. The output is the scores for the bins. The item will be assigned to the bin with the maximum score.
+- *Travelling salesman*. It is to find the shortest route to visit all the given locations once and return to the starting location. The average gap from the optimal solution (which is generated by Concorde (Applegate et al., 2006)) is used as the fitness value. They use EoH to design Guided Local Search (GLS) heuristics. GLS is a strategy to help a local search to escape local optimal solutions. A key issue in GLS heuristics is how to update the objective function (i.e. landscape) to guide the local search to move to more promising areas. Noting that the landscape is primarily determined by the distance matrix, the goal of EoH is to produce a method for updating the distance matrix. Following (Alsheddy et al., 2018; Arnold & S ¨orensen, 2019), the inputs are the distance matrix, the current route, and the number of edges. The output is an updated distance matrix. GLS runs local search operators on updated landscapes iteratively. Two local search operators used in our experiments are the relocate and 2-opt operators. A detailed introduction of the GLS heuristics is presented in the Appendix of the paper.
+- *Flow Shop Scheduling Problem (FSSP)*. It is to schedule $n$ jobs on $m$ machines, where each job contains $m$​ operations that must be performed in a predetermined order on the respective machine. The objective is to minimize the total schedule length, known as the makespan. In the perturbation flow-shop scheduling problem, the processing order remains consistent throughout each step and no machine can execute multiple operations simultaneously. The average makespan serves as the fitness value. They use the EoH to produce a heuristic for updating the objective landscape in GLS for this problem. The inputs in the heuristic are the time matrix, current scheduling, and the number of machines and jobs. The outputs are the updated time matrix and the calculated job perturbation priority. The local search operators used are the *relocate* and *swap* operators.
+
+In their experiments, the number of generations in EoH for all problems is set to 20. The population size is 20 for online bin packing and 10 for TSP and FSSP. The number of parent heuristics used in E1 and E2 is p = 5. The GPT-3.5-turbo pre-trained LLM is used. For TSP and FSSP, the maximum number of iterations for local search is set to 1,000, and the maximum running time for each instance is 60 seconds. The entire framework and the implementations of EoH on the three problems are implemented in Python and executed on a single CPU i7-9700.
+
+#### Results
+
+![fig2.png](assets/img/eoh/fig2.png)
+
+![tbl1.png](assets/img/eoh/tbl1.png)
+
+![tbl2.png](assets/img/eoh/tbl2.png)
+
+![tbl3.png](assets/img/eoh/tbl3.png)
+
+![tbl4.png](assets/img/eoh/tbl4.png)
+
+An ablation study is carried out to provide a better understanding of the contribution of major components in EoH. They consider the following variants of EoH:
+
+- EoH-e1: it doesn’t use the three modification prompt strategies and E2, i.e. It uses only E1.
+- EoH-e2: it doesn’t use the three modification prompt strategies, i.e. It uses only E1 and E2.
+- EoC: it is the code-only variant of EoH. It doesn’t include the thought part (i.e. the description of the heuristic in natural language). EoC only uses E1 (with-out linguistic description) to generate new codes. The number of parents $p = 5$.
+
+
+
+![tbl5.png](assets/img/eoh/tbl5.png)
+
+
+
+
+
+![tbl6-7.png](assets/img/eoh/tbl6-7.png)
+
+![tbl8.png](assets/img/eoh/tbl8.png)
+
+
+
+The source code can be found in https://github.com/FeiLiu36/EoH
+
